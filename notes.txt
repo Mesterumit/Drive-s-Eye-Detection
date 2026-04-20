@@ -286,3 +286,53 @@ Matplotlib expects:
  " jupyter notebook Eye_Detection.ipynb "
 
 //////////////////////////////////////////////
+
+
+
+######################## APP.PY ###########################################
+
+Notebook trained model
+        ↓
+saved to best_model.pth  ← bridge between them!
+        ↓
+app.py loads weights from best_model.pth
+        ↓
+app.py model becomes trained! 
+
+
+libraries 
+
+cv2  ==> OpenCV library ==> handles everthing camera related:
+                         - opening camerea 
+                         - reading frames
+                         - detecting faces and eyes
+                         - drawing reactangles on frames
+
+
+torch ==>  PyTorch
+           - runs model
+           - handles tensor
+           - makes predictions
+
+
+time ==>  Python's time library
+          - using time.sleep(0.03)
+          to control camera speed
+          30 frames per second
+
+
+transform ==> image processing pipeline same one from training:
+               - Grayscale, Resize, ToTensor, Normilze 
+               prepares camera frames for model
+
+PIL   ==> Python Imaging Library converts OpenCV frames -> PIL images 
+          nedded beacuse : cv2 uses numpy arrays transforms expects PIL images 
+
+
+
+model.py = our model blueprint file
+EyeCNN   = the class inside model.py
+           imports the architecture
+           so we can load weights into it
+
+

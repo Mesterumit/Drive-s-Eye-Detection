@@ -4,6 +4,7 @@ import torch
 import time
 from torchvision import transforms
 from PIL import Image
+# importing the empty model from model.py
 from model import EyeCNN
 
 # Device
