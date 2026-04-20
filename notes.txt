@@ -68,24 +68,171 @@ I prioritize recall over precision since missing a drowsy driver is far more dan
 
 
 
+transform = transforms.Compose([
+    transforms.Grayscale(),           # convert to grayscale
+    transforms.Resize((64, 64)),      # resize all images
+    transforms.ToTensor(),            # convert data to PyTorch tensor
+    transforms.Normalize([0.5], [0.5]) # normalize
+])
+
+ transforms.Grayscale() --> Colored image (3 channels: R,G,B)  →  Gray image (1 channel)
+ Eyes open/closed doesn't need color info → simpler and faster
+
+transforms.ToTensor() --> Image (pixels 0-255)  →  PyTorch Tensor (values 0.0 - 1.0)
+ Model only understands numbers/tensors, not images
+
+ transforms.Normalize([0.5], [0.5]) --> Values (0.0 - 1.0)  →  Values (-1.0 to 1.0)
+Helps the model learn faster & more stable
+
+transforms.Compose() just chains all these steps together so they run automatically one after another on every image.
+
+
+
+////////////////////////////////////////////////////////////
+
+ImageFolder does 3 things:
+
+1- Reads the folder structure
+2- Labels each image automatically
+3- Applies the transform to each image when it's loaded
+
+ImageFolder = librarian who:
+   - knows WHERE all the books are       (finds images)
+   - knows WHICH shelf they came from    (assigns labels)
+   - hands each book to transform        (applies conversion)
+
+transform = the actual conversion machine
+   - receives each image from ImageFolder
+   - converts it to tensor
+
+
+/////////////////////////////////////////////   
+Model layers
+
+Input:
+1 channel   = grayscale (one layer of pixels)
+
+After Conv1:
+32 channels = 32 different feature maps
+              "32 different things I found"
+              edge map, curve map, etc...
+
+After Conv2:
+64 channels = 64 different feature maps
+              more complex patterns
+
+After Conv3:
+128 channels = 128 different feature maps
+               very complex features
+
+
+
+for forward(self,x)
+
+forward works with data, after the model called with data, rorward will work 
+
+x = the data passing through the model
+
+When training:
+x = one batch of images (32 images)
+shape = (32, 1, 64, 64)
+         ↑   ↑   ↑   ↑
+       batch gray  H   W
+       size  scale
+
+Step 1: receives x (batch of images)
+             ↓
+Step 2: passes x through nn.Sequential
+             ↓
+Step 3: returns final output (predictions)
+
+
+///////////////////////////////////////////////
+
+
+outputs = model(images)           # model predicts
+loss = criterion(outputs, labels) # judge scores it
+loss.backward()                   # fix the mistakes
+optimizer.step()                  # apply the fixes
+
+
+////////////////////////////////////////////////////
+
+With zero_grad():
+
+Batch 1:
+zero_grad()  → gradients = [0, 0, 0]  (clean!)
+backward()   → gradients = [0.5, 0.3, 0.8]  (only batch 1)
+step()       → update model correctly ✅
+
+Batch 2:
+zero_grad()  → gradients = [0, 0, 0]  (clean again!)
+backward()   → gradients = [0.2, 0.1, 0.4]  (only batch 2)
+step()       → update model correctly ✅
+
+
+Order always must be:
+
+1. zero_grad()   → clean whiteboard
+2. forward()     → get predictions
+3. backward()    → calculate gradients
+4. step()        → update weights
+
+
+//////////////////////////////////////////////////////
+
+# tracking metrics
+            running_loss += loss.item() # adding " item()" giving only number "0.26" not " tensor(0.26)"
+            _, predicted = torch.max(outputs.data, 1)
+            total += labels.size(0)
+            correct += (predicted == labels).sum().item()
+
+outputs.data = [
+    [2.5, -1.3],   # image 1
+    [-0.5, 3.1],   # image 2
+    [1.8, -0.9],   # image 3
+]
+
+torch.max(..., 1) = finds highest number in each row
+
+_         = the actual highest values  (we don't need!)
+predicted = the INDEX of highest value (we need this!)
+
+Result:
+image 1: [2.5, -1.3] → index 0 → closed
+image 2: [-0.5, 3.1] → index 1 → open
+image 3: [1.8, -0.9] → index 0 → closed
+
+predicted = [0, 1, 0]
+
+
+////////////////////////////////////////////////////
+
+total += labels.size(0)
+
+
+labels.size(0) = batch size = 32
+
+total keeps counting all images seen:
+Batch 1: total = 0  + 32 = 32
+Batch 2: total = 32 + 32 = 64
+Batch 3: total = 64 + 32 = 96
+...
+End: total = 50,937
+Why? To calculate accuracy % later!
 
 
 
 
 
 
-
-
-
-
-
-📁 PNG file on disk
+PNG file on disk
      ↓ PyTorch reads it
-🔢 Tensor [3, 224, 224]  ← PyTorch format
+Tensor [3, 224, 224]  ← PyTorch format
      ↓ .numpy().transpose(1,2,0)
-🔢 Numpy [224, 224, 3]   ← Matplotlib format
+Numpy [224, 224, 3]   ← Matplotlib format
      ↓ plt.imshow()
-🖼️ Visible image on screen
+Visible image on screen
 
 
 /////////////////////////////////////////////////////////////
@@ -120,9 +267,22 @@ image.numpy().transpose(1, 2, 0)
 PyTorch stores images as:
 [channels, height, width]
 [3,        224,    224  ]
- ↑ RGB first!
+ ↑ RGB first
 
 Matplotlib expects:
 [height, width, channels]
 [224,    224,   3       ]
- ↑ RGB last!
+                ↑ RGB last
+
+
+
+
+ //////////////////////////////// Creating the local environment ///////////////////////
+ 
+ " python3 -m venv .venv    "
+ 
+ " source .venv/bin/activate" 
+
+ " jupyter notebook Eye_Detection.ipynb "
+
+//////////////////////////////////////////////
