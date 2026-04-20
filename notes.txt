@@ -206,6 +206,22 @@ image 3: [1.8, -0.9] → index 0 → closed
 predicted = [0, 1, 0]
 
 
+#############################################################
+
+faces = face_cascade.detectMultiScale(
+    gray,              # image to search in
+    scaleFactor=1.1,   # how much to resize each step
+    minNeighbors=4,    # how strict the detection is
+    minSize=(100, 100) # smallest face to detect
+)
+
+
+
+
+
+
+
+
 ////////////////////////////////////////////////////
 
 total += labels.size(0)

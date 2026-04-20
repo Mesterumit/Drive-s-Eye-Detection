@@ -51,6 +51,7 @@ if 'closed_counter' not in st.session_state:
 st.title("👁️ Eye Detection System")
 
 # Buttons
+
 col1, col2 = st.columns(2)
 with col1:
     start = st.button("▶️ Start Camera")
@@ -58,6 +59,8 @@ with col2:
     stop = st.button("⏹️ Stop Camera")
 
 if start:
+    # Memory:
+    # remembers values between reruns
     st.session_state.camera_on = True
     st.session_state.closed_counter = 0
 if stop:
@@ -75,10 +78,10 @@ ALERT_THRESHOLD = 15
 
 # Camera loop
 if st.session_state.camera_on:
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(0) # opend the camera
 
     while st.session_state.camera_on:
-        ret, frame = cap.read()  # get frame
+        ret, frame = cap.read()  # geting the frame from camera and " ret is true or false(didi it work)", frame is image(face)
         if not ret:
             st.error("❌ Camera failed!")
             break
@@ -90,7 +93,7 @@ if st.session_state.camera_on:
         # Detect faces
         faces = face_cascade.detectMultiScale( # find face
             gray,
-            scaleFactor=1.1,
+            scaleFactor=1.1, # to capture diffirnt size of image
             minNeighbors=4,
             minSize=(100, 100)
         )

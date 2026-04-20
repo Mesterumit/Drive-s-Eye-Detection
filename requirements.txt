@@ -1,3 +1,4 @@
 opencv-python
 roboflow
 pandas
+opencv-python
