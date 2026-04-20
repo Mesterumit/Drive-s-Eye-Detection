@@ -15,9 +15,7 @@ model = EyeCNN().to(device)
 model.load_state_dict(torch.load('models/best_model.pth', map_location=device))
 model.eval()
 
-# Transform. Why: camera frames must be prepared
-#  SAME way as training data!
-#  64x64, grayscale, normalized
+
 
 transform = transforms.Compose([
     transforms.Grayscale(),
@@ -71,7 +69,7 @@ if stop:
 frame_placeholder = st.empty()
 status_placeholder = st.empty()
 alert_placeholder = st.empty()
-debug_placeholder = st.empty()
+
 
 # Alert threshold
 ALERT_THRESHOLD = 15
@@ -93,9 +91,9 @@ if st.session_state.camera_on:
         # Detect faces
         faces = face_cascade.detectMultiScale( # find face
             gray,
-            scaleFactor=1.1, # to capture diffirnt size of image
+            scaleFactor=1.1, # to capture diffirente size of images(faces)
             minNeighbors=4,
-            minSize=(100, 100)
+            minSize=(100, 100) # ignores anything smaller than 100*100 pixels
         )
 
         label = 0
@@ -106,12 +104,12 @@ if st.session_state.camera_on:
             # Draw face rectangle
             cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
 
-            # Eye region inside face
-            roi_gray = gray[y:y+h, x:x+w]  # crop face
+            # crop the face from image
+            face_crop = gray[y:y+h, x:x+w]  # crop face
 
             # Detect eyes inside face
             eyes = eye_cascade.detectMultiScale(
-                roi_gray,
+                face_crop,
                 scaleFactor=1.1,
                 minNeighbors=3,
                 minSize=(30, 30)
@@ -127,13 +125,14 @@ if st.session_state.camera_on:
                 )
 
                 # Crop eye for model
-                eye_img = roi_gray[ey:ey+eh, ex:ex+ew]
-                eye_pil = Image.fromarray(eye_img)
+                eye_img = face_crop[ey:ey+eh, ex:ex+ew]
+                
+                eye_pil = Image.fromarray(eye_img) #it turns into python image for tensor
                 tensor = transform(eye_pil).unsqueeze(0).to(device) # prepare for model
 
                 # Predict
                 with torch.no_grad():
-                    output = model(tensor) # predict!
+                    output = model(tensor) # predict the if it sleep or awake
                     _, predicted = torch.max(output, 1)
                     label = predicted.item()
 
@@ -141,12 +140,8 @@ if st.session_state.camera_on:
                 break  # use first eye only
             break  # use first face only
 
-        # Debug
-        debug_placeholder.write(
-            f"🔍 Label: {label} | Eyes found: {eye_found} | Counter: {st.session_state.closed_counter}"
-        )
-
-        # Status
+       
+        # eyes status chcek
         if not eye_found or label == 1:   # closed or not found
             st.session_state.closed_counter += 1
             status_placeholder.error("👁️ SLEEPY/CLOSED ❌")
@@ -154,7 +149,7 @@ if st.session_state.camera_on:
             st.session_state.closed_counter = 0
             status_placeholder.success("👁️ AWAKE/OPEN ✅")
 
-        # Alert
+        # Alert after 15 second
         if st.session_state.closed_counter >= ALERT_THRESHOLD:
             alert_placeholder.warning("🚨 ALERT! Eyes closed too long!")
         else:

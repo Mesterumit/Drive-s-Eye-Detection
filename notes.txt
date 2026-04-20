@@ -218,6 +218,50 @@ faces = face_cascade.detectMultiScale(
 
 
 
+minNeighbors=4
+
+Haarcascade finds many possible faces
+most are FALSE detections!
+
+minNeighbors = how many nearby detections
+               needed to confirm a face
+
+minNeighbors=1 → accepts everything → too many false faces! ❌
+minNeighbors=4 → needs 4 confirmations → more accurate ✅
+minNeighbors=9 → too strict → might miss real face ❌
+
+
+
+#################################################
+
+ # Loop through faces
+        for (x, y, w, h) in faces:
+
+
+x = left position of face    (450 pixels from left)
+y = top position of face     (200 pixels from top)
+w = width of face            (300 pixels wide)
+h = height of face           (300 pixels tall)
+
+
+cv2.rectangle(
+    frame,          # draw ON this image
+    (x, y),         # TOP LEFT corner
+    (x+w, y+h),     # BOTTOM RIGHT corner
+    (255, 0, 0),    # color (BGR format)
+    2               # line thickness
+)
+
+x, y, w, h came from detectMultiScale!
+→ these are the EXACT face coordinates!
+
+detectMultiScale said:
+"face is at x=450, y=200, w=300, h=300"
+
+So crop exactly there:
+gray[200:500, 450:750]
+#    ↑   ↑    ↑   ↑
+#    y  y+h   x  x+w
 
 
 
